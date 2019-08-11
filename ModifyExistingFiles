@@ -1,0 +1,86 @@
+package readFiles;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Read_Modify_WindowsFiles2 {
+	static String sourceLocation = "C:\\Users\\Anil\\Documents\\Sykam";
+	
+	public static void main(String[] args) throws Exception {
+		File folder = new File(sourceLocation);
+		File[] listOfFiles = folder.listFiles();
+		for (File file : listOfFiles) {
+			if (file.isFile()) {
+				String newNo = Integer.toString(((int) ((Math.random() * 900000000) + 100000000)));
+				String oldNo = file.getName().substring(21, 30);
+				System.out.println(oldNo+" --- Changed to ----> "+newNo);
+				String newFileName = file.getName().substring(0, 21) + newNo + file.getName().substring(30);
+				readUpdateFileData(sourceLocation + "\\" + file.getName(), oldNo, newNo, newFileName);
+				deleteAFile(sourceLocation+"\\"+file.getName());
+			}
+		}
+	}
+
+	private static void deleteAFile(String string) {
+		// TODO Auto-generated method stub
+		try
+        { 
+			Files.deleteIfExists(Paths.get(string));
+        } 
+       
+        catch(Exception e) 
+        { 
+           e.printStackTrace(); 
+        }      
+    } 
+
+
+	@SuppressWarnings({ "unused", "null" })
+	private static void readUpdateFileData(String OldfileName, String oldNo, String newNo, String newFileName)
+			throws IOException {
+		// TODO Auto-generated method stub
+		FileInputStream fstream = new FileInputStream(OldfileName);
+		BufferedReader brr = new BufferedReader(new InputStreamReader(fstream));
+		String strLine = null;
+		// Read File Line By Line
+		String[] array = null;
+
+		File file = new File(sourceLocation+"\\"+newFileName);
+		file.createNewFile();
+		FileWriter fw = new FileWriter(file);
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write(brr.readLine().replaceFirst(oldNo, newNo));
+		bw.newLine();
+		String lastLine;
+		List<String> list = new ArrayList<String>();
+		String line;
+		while ((line = brr.readLine()) != null) {
+			list.add(line);
+		}
+		for (int i = 0; i < list.size(); i++) {
+			if (i == 0 || i == (list.size() - 1)) {
+				bw.write(list.get(i).replaceFirst(oldNo, newNo));
+				bw.newLine();
+			} else {
+				bw.write(list.get(i));
+				bw.newLine();
+			}
+		}
+		bw.flush();
+		bw.close();
+		brr.close();
+	}
+
+	
+}
