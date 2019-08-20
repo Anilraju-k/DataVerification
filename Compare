@@ -52,7 +52,7 @@ public class BeyondCompare {
 	private static boolean compareFiles(String file1path2, String file2path2) {
 		// TODO Auto-generated method stub
 		ProcessBuilder processBuilder = new ProcessBuilder("C:\\Program Files\\Beyond Compare 4\\BCompare.exe",
-	            file1path, file2path,"/qc=Text Compare", "/qc=binary");
+	            file1path, file2path,"/fv=Text Compare", "/qc=binary");
 
 	    Process ps;
 	    try {
