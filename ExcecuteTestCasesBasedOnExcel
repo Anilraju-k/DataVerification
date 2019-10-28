@@ -1,0 +1,119 @@
+package sykamexceldata;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+public class ExcecuteTestCasesBasedOnExcel {
+	static String sourceFilesLocation = "C:\\Users\\Anil\\Documents\\Sykam";
+	static String excelFilePath = "C:\\Users\\Anil\\Documents\\sykam1\\Inputfile.xlsx";
+
+	public static void main(String[] args) throws Exception {
+		excecuteExcelTestCases();
+	}
+
+	private static void excecuteExcelTestCases() {
+		try {
+			FileInputStream file = new FileInputStream(new File(excelFilePath));
+			@SuppressWarnings("resource")
+			XSSFWorkbook workbook = new XSSFWorkbook(file);
+			XSSFSheet sheet = workbook.getSheet("Inbound");
+			int rowSize = sheet.getLastRowNum();
+			System.out.println(rowSize);
+			for (int i = 1; i < rowSize; i++) {
+				if (!(sheet.getRow(i).getCell(3) + "").toString().equalsIgnoreCase("null")) {
+					String existingFileName = (sheet.getRow(i).getCell(3)).toString();
+					String newName = updateFileDate(existingFileName);
+					System.out.println(("Existing Names in Excel - " + sheet.getRow(i).getCell(3) + "").toString());
+					System.out.println("Modified Names - " + newName);
+					if (newName.equals("")) {
+						sheet.getRow(i).getCell(3).setCellValue(existingFileName);
+					} else
+						sheet.getRow(i).getCell(3).setCellValue(newName);
+				}
+			}
+			file.close();
+			FileOutputStream out = new FileOutputStream(excelFilePath);
+			workbook.write(out);
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static String updateFileDate(String fileName) throws IOException {
+		// TODO Auto-generated method stub
+		String newFilename = "";
+		File folder = new File(sourceFilesLocation);
+		File[] listOfFiles = folder.listFiles();
+		for (File file : listOfFiles) {
+			if (file.isFile() && file.getName().equalsIgnoreCase(fileName)) {
+				String newNo = Integer.toString(((int) ((Math.random() * 900000000) + 100000000)));
+				String oldNo = file.getName().substring(21, 30);
+				System.out.println(oldNo + " --- Changed to ----> " + newNo);
+				String newFileName = file.getName().substring(0, 21) + newNo + file.getName().substring(30);
+				newFilename = newFileName;
+				readUpdateFileData(sourceFilesLocation + "\\" + file.getName(), oldNo, newNo, newFileName);
+				deleteAFile(sourceFilesLocation + "\\" + file.getName());
+				return newFileName;
+			}
+		}
+		return newFilename;
+	}
+
+	private static void deleteAFile(String string) {
+		// TODO Auto-generated method stub
+		try {
+			Files.deleteIfExists(Paths.get(string));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@SuppressWarnings({ "unused", "null" })
+	private static void readUpdateFileData(String OldfileName, String oldNo, String newNo, String newFileName)
+			throws IOException {
+		// TODO Auto-generated method stub
+		FileInputStream fstream = new FileInputStream(OldfileName);
+		BufferedReader brr = new BufferedReader(new InputStreamReader(fstream));
+		String strLine = null;
+		// Read File Line By Line
+		String[] array = null;
+		File file = new File(sourceFilesLocation + "\\" + newFileName);
+		file.createNewFile();
+		FileWriter fw = new FileWriter(file);
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write(brr.readLine().replaceFirst(oldNo, newNo));
+		bw.newLine();
+		String lastLine;
+		List<String> list = new ArrayList<String>();
+		String line;
+		while ((line = brr.readLine()) != null) {
+			list.add(line);
+		}
+		for (int i = 0; i < list.size(); i++) {
+			if (i == 0 || i == (list.size() - 1)) {
+				bw.write(list.get(i).replaceFirst(oldNo, newNo));
+				bw.newLine();
+			} else {
+				bw.write(list.get(i));
+				bw.newLine();
+			}
+		}
+		bw.flush();
+		bw.close();
+		brr.close();
+	}
+}
